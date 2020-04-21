@@ -33,6 +33,8 @@ func main() {
 	router.HandleFunc("/contact", getContacts).Methods("GET")
 	router.HandleFunc("/contact", createContact).Methods("POST")
 	router.HandleFunc("/contact/{id}", getContact).Methods("GET")
+	router.HandleFunc("/contact/{id}", updateContact).Methods("PUT")
+	router.HandleFunc("/contact/{id}", deleteContact).Methods("DELETE")
 
 	http.ListenAndServe(":8000", router)
 }
@@ -70,4 +72,41 @@ func createContact(w http.ResponseWriter, r *http.Request){
 
 	contacts = append(contacts, contact)
 	json.NewEncoder(w).Encode(&contact)
+}
+
+func updateContact(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	id := params["id"]
+
+	for index, item := range contacts {
+		if item.Id == id {
+			contacts = append(contacts[:index], contacts[index+1:]...)
+
+			var contact Contact
+			_ = r.ParseForm()
+
+			contact.Id = id
+			contact.FirstName = r.FormValue("firstname")
+			contact.LastName = r.FormValue("lastname")
+			contact.Phone = r.FormValue("phone")
+			contact.Email = r.FormValue("email")
+			contact.Company = r.FormValue("company")
+			contact.Project = r.FormValue("project")
+			contact.Notes = r.FormValue("notes")
+			contacts = append(contacts, contact)
+		}
+	}
+}
+
+func deleteContact(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	id := params["id"]
+	for index, item := range contacts {
+		if item.Id == id {
+			contacts = append(contacts[:index], contacts[index+1:]...)
+		}
+	}
 }
